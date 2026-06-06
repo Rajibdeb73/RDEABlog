@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mastering AI Code with Design Patterns — Enterprise Architecture Field Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#12141c;--ink-2:#2d3148;--ink-3:#4a5070;--muted:#7a8299;--dim:#a0a8c0;
+  --rule:#dde0ec;--rule-hi:#c0c8e0;--bg:#fafbfe;--bg-2:#f2f4fb;--bg-3:#eaecf6;--bg-dark:#0d0f1c;
+  --blue:#1a3fc0;--blue-l:#dde5fb;--teal:#0a8f72;--teal-l:#d0f0e6;
+  --purple:#5535b0;--purple-l:#ece5fa;--amber:#b06808;--amber-l:#fdefd0;
+  --coral:#b83030;--coral-l:#fce4e4;--green:#1e6e38;--green-l:#dceedf;--gold:#8a6800;
+  --serif:'Playfair Display',Georgia,serif;
+  --body:'Source Serif 4',Georgia,serif;
+  --mono:'JetBrains Mono',monospace;
+  --col:740px;--wide:1060px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--body);font-size:18px;line-height:1.75;color:var(--ink);background:var(--bg);overflow-x:hidden;}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:1000;transition:width .1s linear;}
+.site-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,251,254,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-family:var(--mono);font-size:12px;color:var(--blue);letter-spacing:.08em;font-weight:500;text-decoration:none;}
+.nav-links{display:flex;overflow-x:auto;}
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:0 14px;height:52px;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.nav-links a:hover{color:var(--ink);}
+.nav-links a.active{color:var(--blue);border-bottom-color:var(--blue);}
+.hero{background:var(--bg-dark);padding:120px 2rem 80px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(26,63,192,.18) 0%,transparent 70%),radial-gradient(ellipse 60% 80% at 80% 20%,rgba(10,143,114,.10) 0%,transparent 70%);}
+.hero-inner{max-width:var(--col);margin:0 auto;position:relative;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;}
+.eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--teal);}
+.hero h1{font-family:var(--serif);font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.1;color:#fff;margin-bottom:1.5rem;letter-spacing:-.02em;}
+.hero h1 em{font-style:italic;color:#7aa4ff;}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,.5);max-width:580px;line-height:1.7;margin-bottom:2.5rem;font-weight:300;}
+.hero-meta{display:flex;gap:2rem;flex-wrap:wrap;}
+.hm{display:flex;flex-direction:column;gap:3px;}
+.hm .v{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:#fff;line-height:1;}
+.hm .l{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.layer-pills{max-width:var(--wide);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);}
+.lp{background:var(--bg);padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:6px;text-decoration:none;transition:background .15s;}
+.lp:hover{background:var(--bg-2);}
+.lp-num{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;}
+.lp-name{font-family:var(--serif);font-size:1.05rem;font-weight:700;color:var(--ink);}
+.lp-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+.lp[data-l="1"] .lp-num{color:var(--blue);}
+.lp[data-l="2"] .lp-num{color:var(--purple);}
+.lp[data-l="3"] .lp-num{color:var(--teal);}
+.lp[data-l="4"] .lp-num{color:var(--muted);}
+.main{padding-bottom:6rem;}
+.sec-open{padding:5rem 2rem 0;max-width:var(--col);margin:0 auto;}
+.sec-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.75rem;display:flex;align-items:center;gap:10px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:currentColor;opacity:.2;}
+.sec-h2{font-family:var(--serif);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;line-height:1.1;letter-spacing:-.02em;color:var(--ink);margin-bottom:.75rem;}
+.sec-intro{font-size:1.05rem;color:var(--ink-3);line-height:1.8;max-width:600px;margin-bottom:2rem;font-style:italic;font-weight:300;}
+.prologue{padding:4rem 2rem;max-width:var(--col);margin:0 auto;}
+.prologue p{font-size:1.1rem;color:var(--ink-2);line-height:1.9;margin-bottom:1.4rem;}
+.prologue p:first-of-type::first-letter{font-family:var(--serif);font-size:4.5rem;font-weight:900;color:var(--blue);float:left;line-height:.82;margin:.1em .1em 0 0;padding-right:4px;}
+.pq{font-family:var(--serif);font-size:1.4rem;font-style:italic;font-weight:400;color:var(--blue);line-height:1.5;border-left:3px solid var(--blue);padding:1rem 0 1rem 1.5rem;margin:2.5rem 0;max-width:560px;}
+.pat-art{padding:4rem 2rem 3rem;max-width:var(--col);margin:0 auto;border-bottom:1px solid var(--rule);}
+.pat-art:last-child{border-bottom:none;}
+.pat-hdr{display:grid;grid-template-columns:auto 1fr auto;gap:1.25rem;align-items:start;margin-bottom:2rem;}
+.pat-num{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);padding-top:6px;width:32px;}
+.pat-title{font-family:var(--serif);font-size:clamp(1.4rem,3.5vw,2rem);font-weight:900;line-height:1.1;letter-spacing:-.02em;color:var(--ink);margin-bottom:.4rem;}
+.pat-sub{font-size:.9rem;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;}
+.pat-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:4px;font-weight:500;white-space:nowrap;margin-top:4px;}
+.pat-lead{font-size:1.08rem;color:var(--ink-2);line-height:1.85;margin-bottom:1.5rem;font-style:italic;font-weight:300;border-left:2px solid var(--rule-hi);padding-left:1.2rem;}
+.sh{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:2rem 0 .75rem;}
+.pb{font-size:1rem;color:var(--ink-2);line-height:1.85;margin-bottom:1rem;}
+.pb strong{color:var(--ink);font-weight:600;}
+.pb em{color:var(--ink-3);}
+.cw{background:#0e1120;border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0;overflow-x:auto;}
+.cw .cl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:.75rem;display:block;}
+.cw code{font-family:var(--mono);font-size:13px;line-height:1.8;color:#a8c0e8;display:block;white-space:pre;}
+.cw code .cm{color:rgba(160,176,232,.4);font-style:italic;}
+.cw code .ck{color:#7aa4ff;}
+.cw code .cv{color:#5ddcb4;}
+.cw code .cn{color:#f0c060;}
+.callout{border-radius:10px;padding:1.25rem 1.5rem;margin:1.5rem 0;}
+.ch{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.5rem;font-weight:600;}
+.cb{font-size:.95rem;line-height:1.7;}
+.c-m{background:var(--coral-l);border-left:3px solid var(--coral);}
+.c-m .ch{color:var(--coral);}
+.c-m .cb{color:#5a1c1c;}
+.c-f{background:var(--green-l);border-left:3px solid var(--green);}
+.c-f .ch{color:var(--green);}
+.c-f .cb{color:#1a3e24;}
+.c-p{background:var(--blue-l);border-left:3px solid var(--blue);}
+.c-p .ch{color:var(--blue);}
+.c-p .cb{color:#1a2860;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem;}
+.chip{font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:100px;border:1px solid var(--rule-hi);color:var(--ink-3);background:var(--bg);letter-spacing:.04em;}
+.orn{text-align:center;color:var(--dim);font-size:1.2rem;padding:1.5rem 0;letter-spacing:.4em;}
+.sum-wrap{padding:4rem 2rem;max-width:var(--wide);margin:0 auto;}
+.sum-tbl{width:100%;border-collapse:collapse;font-size:13.5px;}
+.sum-tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--ink);padding:.75rem 1rem;text-align:left;}
+.sum-tbl td{padding:.7rem 1rem;border-bottom:1px solid var(--rule);color:var(--ink-3);vertical-align:top;}
+.sum-tbl tr:nth-child(even) td{background:var(--bg-2);}
+.sum-tbl tr:hover td{background:var(--blue-l);}
+.td-n{color:var(--ink);font-weight:600;font-family:var(--body);}
+.lb{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.lb.l1{background:var(--blue-l);color:var(--blue);}
+.lb.l2{background:var(--purple-l);color:var(--purple);}
+.lb.l3{background:var(--teal-l);color:var(--teal);}
+.lb.l4{background:var(--bg-3);color:var(--muted);}
+footer{background:var(--bg-dark);color:rgba(255,255,255,.35);text-align:center;padding:3rem 2rem;font-family:var(--mono);font-size:12px;line-height:1.8;}
+footer strong{color:rgba(255,255,255,.7);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+.fi{opacity:0;animation:fadeUp .5s ease forwards;}
+.fi:nth-child(1){animation-delay:.1s;}
+.fi:nth-child(2){animation-delay:.2s;}
+.fi:nth-child(3){animation-delay:.3s;}
+.fi:nth-child(4){animation-delay:.4s;}
+.rev{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease;}
+.rev.vis{opacity:1;transform:none;}
+@media(max-width:700px){.layer-pills{grid-template-columns:1fr 1fr;}.pat-hdr{grid-template-columns:1fr;}.pat-num{display:none;}.nav-links{display:none;}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<nav class="site-nav">
+  <a class="nav-brand" href="#top">EA · AI PATTERNS</a>
+  <div class="nav-links">
+    <a href="#prologue" data-s="prologue">Prologue</a>
+    <a href="#layer1" data-s="layer1">Foundation</a>
+    <a href="#layer2" data-s="layer2">Orchestration</a>
+    <a href="#layer3" data-s="layer3">Integration</a>
+    <a href="#layer4" data-s="layer4">Governance</a>
+    <a href="#reference" data-s="reference">Reference</a>
+  </div>
+</nav>
+
+<section id="top" class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow fi">Enterprise Architecture Field Guide · 2026</div>
+    <h1 class="fi">Mastering AI Code<br/>with <em>Design Patterns</em></h1>
+    <p class="hero-sub fi">A complete, deeply narrated guide to industry-grade AI solution architecture — eighteen patterns across four layers, with banking examples, common mistakes, and the lessons only production teaches.</p>
+    <div class="hero-meta fi">
+      <div class="hm"><span class="v">18</span><span class="l">Patterns</span></div>
+      <div class="hm"><span class="v">4</span><span class="l">Layers</span></div>
+      <div class="hm"><span class="v">~45</span><span class="l">Min read</span></div>
+      <div class="hm"><span class="v">BFSI</span><span class="l">Primary context</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="layer-pills">
+  <a class="lp" data-l="1" href="#layer1"><span class="lp-num">Layer 01</span><span class="lp-name">Foundation</span><span class="lp-desc">Reasoning primitives inside a single agent — 6 patterns</span></a>
+  <a class="lp" data-l="2" href="#layer2"><span class="lp-num">Layer 02</span><span class="lp-name">Orchestration</span><span class="lp-desc">How agents coordinate complex work — 4 patterns</span></a>
+  <a class="lp" data-l="3" href="#layer3"><span class="lp-num">Layer 03</span><span class="lp-name">Integration</span><span class="lp-desc">AI connecting to your enterprise fabric — 4 patterns</span></a>
+  <a class="lp" data-l="4" href="#layer4"><span class="lp-num">Layer 04</span><span class="lp-name">Governance</span><span class="lp-desc">Safe, auditable, and resilient at scale — 4 patterns</span></a>
+</div>
+
+<main class="main">
+
+<!-- PROLOGUE -->
+<section id="prologue">
+<div class="prologue rev">
+  <div class="sec-lbl" style="color:var(--gold)">Prologue</div>
+  <h2 class="sec-h2" style="margin-bottom:1.5rem">The Architect's Dilemma</h2>
+  <p>It is three in the morning in a bank's war room in Sydney. A single monitor glows in the dark. The timestamp reads 03:14. A payment has just failed — not crashed, not timed out. It made the wrong decision. The AI model, trusted with real-time fraud scoring on Australia's New Payments Platform rail, declined a legitimate payment from a loyal, verified customer. The customer called. Then complained. Then posted. The incident ticket is already open.</p>
+  <p>The architect on call stares at the logs. There is an output — <strong>DECLINED</strong> — but the reasoning is gone, stripped in a pipeline optimisation three weeks ago. The prompt version that ran? Unknown. Which retrieval chunks informed the decision? Not stored. Was the guardrail even active at that hour? Nobody is certain.</p>
+  <div class="pq">This is not a story about AI failing. It is a story about the absence of patterns.</div>
+  <p>Design patterns in software engineering are not academic constructs. They are the scar tissue of production systems — lessons encoded by practitioners who learned them under load, under pressure, with real consequences for getting it wrong. In AI systems deployed in regulated institutions, the stakes are higher still. A hallucinated policy answer is a potential consumer harm event. A prompt injection in an internal tool is a data breach. An unversioned system prompt is an unexplainable decision. An agent without a stopping condition is a production incident.</p>
+  <p>This guide is organised as a journey through four layers of patterns. Each builds on the one beneath it. Together, they form the architecture of an AI system that a bank's risk committee, its regulators, and its architects can all trust — not merely in a demonstration environment, but at midnight on a Monday, under load, with real money and real customers.</p>
+  <p>The patterns that follow are the answer to that war room question. They are what was missing.</p>
+</div>
+</section>
+
+<!-- LAYER 1 -->
+<section id="layer1">
+<div class="sec-open rev">
+  <div class="sec-lbl" style="color:var(--blue)">Layer One · Foundation Patterns</div>
+  <h2 class="sec-h2">Before the agent can coordinate,<br/>it must first be able to <em style="color:var(--blue)">think</em>.</h2>
+  <p class="sec-intro">Six patterns that govern how a single agent reasons, retrieves, acts, and maintains state. These are the atoms. Get them wrong and no amount of orchestration sophistication will save the system.</p>
+  <div class="callout c-p"><div class="ch">Enterprise Principle</div><div class="cb">Get Layer 1 right before scaling to Layer 2. Most production failures trace back to a poorly designed foundation — an agent that hallucinates because it has no grounding, or loops because it has no stopping condition. Fix the primitive before adding orchestration complexity.</div></div>
+</div>
+
+<article class="pat-art rev" id="react">
+  <div class="pat-hdr">
+    <span class="pat-num">01</span>
+    <div><h3 class="pat-title">ReAct — Reason + Act</h3><span class="pat-sub">The closed-loop reasoning primitive</span></div>
+    <span class="pat-tag" style="background:var(--blue-l);color:var(--blue)">Core Pattern</span>
+  </div>
+  <p class="pat-lead">ReAct is the workhorse of agentic AI. It gives a model the ability to alternate between thinking and acting — not as separate phases, but as an interlocked loop where each observation changes what the agent thinks next.</p>
+  <p class="pb">The name combines <strong>Rea</strong>soning with <strong>Act</strong>ion. The model produces a structured thought — "what do I know, what do I still need?" — then calls a tool or API. The response becomes an observation, feeding directly into the next reasoning step. This loop continues until a terminal condition is met.</p>
+  <p class="pb">What makes ReAct powerful in enterprise AI is not just its flexibility, but its <em>traceability</em>. Unlike a single-shot prompt, ReAct externalises the entire decision chain. Every thought is recorded. Every tool call logged. Every observation shapes a visible reasoning step. In regulated environments, this is not merely a quality improvement — it is an audit trail.</p>
+  <div class="sh">Banking scenario: KYC enrichment agent</div>
+  <div class="cw"><span class="cl">ReAct Loop — KYC Enrichment</span><code><span class="ck">Thought:</span>  Customer C-4821 is new. I need to verify sanctions status before proceeding.
+<span class="ck">Action:</span>   <span class="cv">sanctions_check</span>({ entity_id: <span class="cn">"C-4821"</span>, lists: [<span class="cn">"OFAC","UN","AUSTRAC"</span>] })
+<span class="ck">Obs:</span>      CLEAR — no matches across all three screening lists.
+
+<span class="ck">Thought:</span>  Sanctions clear. Now I need PEP status and adverse media.
+<span class="ck">Action:</span>   <span class="cv">pep_lookup</span>({ name: <span class="cn">"John Smith"</span>, dob: <span class="cn">"1975-03-14"</span>, country: <span class="cn">"AU"</span> })
+<span class="ck">Obs:</span>      MATCH — former regional councillor, Queensland 2014-2018. Tier 2 PEP.
+
+<span class="ck">Thought:</span>  Tier 2 PEP match requires EDD and senior relationship manager sign-off.
+<span class="ck">Action:</span>   <span class="cv">adverse_media_scan</span>({ entity: <span class="cn">"John Smith"</span>, date_range: <span class="cn">"2014-present"</span> })
+<span class="ck">Obs:</span>      No adverse media findings in credible sources.
+
+<span class="ck">Thought:</span>  PEP match without adverse media. Per policy 4.2: EDD queue with senior sign-off.
+<span class="ck">Final:</span>    Risk tier = HIGH. Action = EDD_REQUIRED. Assignee = relationship_manager_pool.</code></div>
+  <p class="pb">This chain replaces a brittle rules engine with adaptive, observable reasoning. If the sanctions API returns an error, the agent records that observation and can escalate — rather than silently defaulting to CLEAR. Every decision step is reviewable by compliance, auditable by APRA, and explainable to the customer.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — No Loop Termination Condition</div><div class="cb">Teams deploy ReAct agents without defining when the agent should stop. The agent continues calling tools — checking additional databases, requesting more context — long after sufficient information has been gathered. A 40-step KYC loop on a straightforward corporate customer is not intelligence; it is an operational incident surfacing in your APRA CPS 230 risk log. Beyond cost, runaway loops can trigger rate limits on downstream APIs and create cascading failures.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Encode explicit stopping criteria in the system prompt: a maximum number of steps (6–10 for KYC-style tasks) and a set of terminal actions that halt the loop (e.g., <code>submit_risk_verdict</code>, <code>escalate_to_human</code>). Enforce these in your runtime wrapper — not just in the prompt. If the agent reaches max_steps without a terminal action, the runtime automatically escalates to a human queue.</div></div>
+  <div class="chips"><span class="chip">KYC enrichment</span><span class="chip">Fraud investigation</span><span class="chip">Credit decisioning</span><span class="chip">Dispute resolution</span><span class="chip">Trade surveillance</span><span class="chip">AML case management</span></div>
+</article>
+
+<article class="pat-art rev" id="cot">
+  <div class="pat-hdr">
+    <span class="pat-num">02</span>
+    <div><h3 class="pat-title">Chain of Thought</h3><span class="pat-sub">Stepped, visible reasoning — and your compliance audit trail</span></div>
+    <span class="pat-tag" style="background:var(--blue-l);color:var(--blue)">Audit-Critical</span>
+  </div>
+  <p class="pat-lead">Chain of Thought forces the model to externalise every reasoning step before producing a final answer. In consumer contexts this improves accuracy. In regulated financial services, it does something more important: it creates the explainability artefact that regulators require.</p>
+  <p class="pb">The mechanics are straightforward. You instruct the model — either through a simple directive ("think step by step") or through worked examples — to show its reasoning before concluding. Three practical variants: <strong>Zero-shot CoT</strong> appends "Think step by step" to the user prompt. <strong>Few-shot CoT</strong> provides 2–3 worked examples with full reasoning chains. <strong>Process-of-Thought (PoT)</strong> instructs the model to emit pseudocode for numerical reasoning — particularly valuable in financial calculations where arithmetic accuracy is non-negotiable.</p>
+  <div class="sh">Banking scenario: credit decision with explainability</div>
+  <div class="cw"><span class="cl">CoT credit decision — system instruction + model output</span><code><span class="cm">// System instruction:</span>
+<span class="cn">"Reason through: (1) income stability, (2) DTI ratio vs 35% threshold,
+(3) repayment history over 48 months, (4) collateral and LVR vs 80% maximum.
+Show your reasoning for each step before concluding."</span>
+
+<span class="ck">Step 1 — Income:</span>  Salary $110k, same employer 3y 4m. Consistent pay stubs. STABLE.
+<span class="ck">Step 2 — DTI:</span>     Existing debt $1,800/mo. Gross $9,167/mo. DTI = 19.6%. PASS.
+<span class="ck">Step 3 — History:</span> 2 late payments in 48 months, both 2022. No defaults. MINOR FLAG.
+<span class="ck">Step 4 — Collateral:</span> Property $620k. Loan $420k. LVR = 67.7%. Policy max 80%. ADEQUATE.
+
+<span class="ck">Decision:</span>   APPROVE at standard variable rate.
+<span class="ck">Conditions:</span> Flag for 12-month repayment monitoring.
+<span class="ck">Confidence:</span> 0.89</code></div>
+  <p class="pb">This output is not merely a better decision — it is a <em>defensible</em> decision. When a customer lodges a dispute under the bank's IDR process, the reasoning chain is the evidence. When APRA examines automated credit decisioning, the chain of thought is the explainability artefact. When a model version changes and decisions shift, the chain reveals exactly which step changed and why.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Stripping CoT from the Audit Log</div><div class="cb">A developer, optimising API response size, strips the reasoning steps before logging — keeping only the final decision. When the compliance team audits automated credit decisions, all they have are APPROVE/DECLINE outcomes with no reasoning. Under APRA CPS 230, the inability to reconstruct and explain an automated decision is a model governance gap. Under ASIC's RG 271, it may be a consumer protection obligation failure.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Demand structured output that explicitly preserves reasoning: <code>{"reasoning_steps": [...], "decision": "APPROVE", "confidence": 0.89, "flags": [...]}</code>. Log the full structured object — not just the decision field. The reasoning steps are the compliance evidence. Treat them with the same retention discipline as the decision itself: seven years in Australia for regulated credit decisions.</div></div>
+  <div class="chips"><span class="chip">Credit decisioning</span><span class="chip">Insurance underwriting</span><span class="chip">Risk explainability</span><span class="chip">Regulatory Q&A</span><span class="chip">Investment suitability</span></div>
+</article>
+
+<article class="pat-art rev" id="rag">
+  <div class="pat-hdr">
+    <span class="pat-num">03</span>
+    <div><h3 class="pat-title">Retrieval Augmented Generation</h3><span class="pat-sub">Grounding intelligence in verified, current knowledge</span></div>
+    <span class="pat-tag" style="background:var(--teal-l);color:var(--teal)">Critical Infrastructure</span>
+  </div>
+  <p class="pat-lead">A large language model's knowledge is frozen at the moment of training. Your regulatory policies are not. RAG decouples knowledge from model weights — so your AI answers from your documents, not from memory that might be wrong, stale, or hallucinated.</p>
+  <p class="pb">RAG works in two phases. In the <strong>ingestion phase</strong>, your documents — policy manuals, APRA instruments, product disclosure statements — are chunked, converted into vector embeddings, and stored in a vector database. In the <strong>inference phase</strong>, the query is embedded using the same model, and the database is searched for the most semantically similar chunks. Those chunks are injected into context alongside the query. The model generates its answer grounded in those retrieved documents — not in training data.</p>
+  <div class="sh">The six-stage production RAG pipeline</div>
+  <div class="cw"><span class="cl">RAG pipeline architecture</span><code><span class="ck">Stage 1 — Ingest:</span>
+  PDF/DOCX/HTML → parser → semantic chunker → embedder → vector DB
+  Metadata: source, version, effective_date, document_class, jurisdiction
+
+<span class="ck">Stage 2 — Embed query:</span>
+  user_query → same embedding model → query_vector (1536-dim)
+
+<span class="ck">Stage 3 — Retrieve:</span>
+  vector_DB.similarity_search(query_vector, top_k=8, threshold=0.70)
+
+<span class="ck">Stage 4 — Rerank:</span>
+  cross_encoder.rerank(query, candidate_chunks) → top_5 by relevance
+  <span class="cm">// eliminates false positives — critical for regulatory content</span>
+
+<span class="ck">Stage 5 — Augment:</span>
+  prompt = system_prompt + retrieved_chunks + user_query
+
+<span class="ck">Stage 6 — Validate:</span>
+  faithfulness_check: every claim must be traceable to retrieved chunks</code></div>
+  <p class="pb">Note Stage 4 — the reranker. Vector similarity finds chunks that are <em>semantically close</em>, but semantic closeness is not the same as relevance. A reranker rescores candidates against the actual query, dramatically improving precision. For regulatory content where the difference between a clause that sounds relevant and one that is relevant can be legally significant, the reranker is not optional.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake #1 — Hard-Split Chunking Destroys Regulatory Clauses</div><div class="cb">A fixed 500-token hard split cuts a regulatory clause in half. The retrieved chunk reads "the bank may not engage in margin lending activities..." but the qualifying clause "...without prior approval from APRA under Section 23(b)" is in the next chunk, which was not retrieved. The model generates guidance that is the direct opposite of the actual regulatory requirement. In a compliance Q&A context, this is not an accuracy failure — it is a regulatory risk event.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Use semantic chunking that splits on natural document boundaries — section headings, paragraph breaks, numbered clause boundaries. Implement a sliding window overlap of 100–150 tokens at chunk boundaries. Store the document's hierarchical structure as metadata so when a clause chunk is retrieved, its parent section can be retrieved alongside it for full context.</div></div>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake #2 — No Version Awareness</div><div class="cb">A 2022 version of an APRA prudential standard and the 2024 updated version both exist in the vector database. Without metadata-aware reranking, the model may answer based on the superseded version — citing a threshold that was increased in the 2024 revision. The answer is confident, fluent, and wrong.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Tag every document with <code>effective_from</code>, <code>effective_to</code>, and <code>superseded_by</code> metadata at ingestion time. Apply a recency boost in the reranking stage for regulatory content. For time-sensitive queries, filter the retrieval pool to documents whose <code>effective_to</code> date is null (currently in force).</div></div>
+  <div class="chips"><span class="chip">Policy Q&A</span><span class="chip">Regulatory lookup</span><span class="chip">Product knowledge base</span><span class="chip">Contract review</span><span class="chip">Regulatory change alerts</span></div>
+</article>
+
+<article class="pat-art rev" id="selfreflect">
+  <div class="pat-hdr">
+    <span class="pat-num">04</span>
+    <div><h3 class="pat-title">Self-Reflection</h3><span class="pat-sub">The agent that challenges its own output before releasing it</span></div>
+    <span class="pat-tag" style="background:var(--purple-l);color:var(--purple)">Quality Gate</span>
+  </div>
+  <p class="pat-lead">Self-Reflection gives an agent the ability to evaluate its own output against defined quality criteria before returning it to the caller. It is a compliance review built into the generation loop itself — without adding a human to every workflow.</p>
+  <p class="pb">The pattern has four stages: <strong>Generate</strong> a draft response. <strong>Critique</strong> it against a rubric — is every claim grounded in retrieved context? Does the output comply with the required format schema? Are regulatory references cited correctly? <strong>Revise</strong> if any criterion fails. And <strong>Gate</strong> at a maximum of three reflection rounds — after which unresolved issues escalate to human review.</p>
+  <p class="pb">In banking, Self-Reflection is the quality mechanism that makes AI suitable for compliance-adjacent tasks. A regulatory report self-reviewed against a structured rubric before human sign-off carries less risk than one that has not. A customer communication checked for accurate rate citations and appropriate hardship language before sending is less likely to trigger a complaint.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Same Context Window Critique</div><div class="cb">Placing the critique in the same context window as the generation creates confirmation bias. The model has already "committed" to its answer. When asked to critique it in the same context, it rationalises rather than genuinely challenges. For a compliance review task — where the entire value is in independent challenge — this produces false assurance rather than genuine quality improvement.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Use a separate API call for the critique step with a different system prompt: "You are a strict compliance reviewer. Your only job is to find errors, omissions, and inaccuracies. Be adversarial." In high-stakes flows — credit decisioning, AML reporting — use a structurally different model for the critique step. The critique call is a separate inference with no memory of the generation that produced the draft.</div></div>
+  <div class="chips"><span class="chip">Regulatory report generation</span><span class="chip">Customer communications</span><span class="chip">Document drafting</span><span class="chip">Compliance review automation</span></div>
+</article>
+
+<article class="pat-art rev" id="memory">
+  <div class="pat-hdr">
+    <span class="pat-num">05</span>
+    <div><h3 class="pat-title">Memory Management</h3><span class="pat-sub">State across turns, sessions, and time</span></div>
+    <span class="pat-tag" style="background:var(--amber-l);color:var(--amber)">Stateful Systems</span>
+  </div>
+  <p class="pat-lead">A stateless AI agent introduces itself to the same customer every single time. Memory Management is the architectural discipline that gives an agent continuity — across a single conversation, across sessions, and across the months-long lifecycle of a complex case.</p>
+  <p class="pb">Enterprise AI memory operates across three tiers. <strong>Tier One — In-context memory</strong>: the current conversation window. Fast, immediately available, completely ephemeral — gone when the session ends. <strong>Tier Two — External store</strong>: Redis, a vector database, or a relational store keyed by session ID or customer ID. Survives session boundaries. Enables an agent to pick up where a previous conversation ended. <strong>Tier Three — Episodic memory</strong>: compressed, summarised representations of past sessions. Rather than storing full transcripts, the episodic tier stores structured summaries: the nature of the dispute, the outcome, commitments made. At session start, Tier Two and Three content loads into context — and the agent begins informed, not blank.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Storing Raw PII in AI Memory</div><div class="cb">An agent stores full customer records — name, DOB, account number, transaction history — in a vector database hosted outside Australia. The bank's APRA data residency obligations require customer data to remain in-country. The AI memory store, built quickly by an engineering team unfamiliar with the regulatory requirement, has created a latent compliance breach at the architecture layer. It may not be discovered until the next APRA operational risk review.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Classify all memory content at write time: PII, Sensitive-Commercial, or Public. Store only tokenised references in the AI memory store — the foreign key to the customer record, not the record itself. Actual PII remains in your existing, governed, in-region data stores. The AI memory holds the pointer; your CRM or core banking system holds the data.</div></div>
+  <div class="chips"><span class="chip">Long-running dispute cases</span><span class="chip">Customer relationship context</span><span class="chip">Multi-session investigations</span><span class="chip">Advisor continuity</span></div>
+</article>
+
+<article class="pat-art rev" id="prompting">
+  <div class="pat-hdr">
+    <span class="pat-num">06</span>
+    <div><h3 class="pat-title">Structured Prompting</h3><span class="pat-sub">The engineering discipline of deterministic, governed instructions</span></div>
+    <span class="pat-tag" style="background:var(--green-l);color:var(--green)">Foundation Discipline</span>
+  </div>
+  <p class="pat-lead">Structured Prompting is not about writing clever prompts. It is the engineering discipline of creating prompts that are versioned, testable, governed, and maintainable — so that every AI decision can be traced to a specific, approved instruction set.</p>
+  <p class="pb">The system prompt is the most consequential piece of configuration in an AI system. It determines what the agent will and will not do, how it reasons, what format it outputs, and what constraints it operates within. A change to the system prompt is a change to the AI's behaviour — and in a regulated institution, behaviour changes require governance.</p>
+  <p class="pb">The <strong>instruction hierarchy</strong> is the foundational concept: three levels of authority. <em>Operator-level instructions</em> (your system prompt) define the agent's purpose, persona, and hard constraints. <em>User-level instructions</em> are the incoming query. <em>Retrieved context</em> from RAG is the lowest authority — factual grounding that informs but does not override operator rules. This hierarchy must be explicit in the system prompt and enforced by the agent's behaviour.</p>
+  <div class="cw"><span class="cl">Output schema enforcement — credit decision agent</span><code><span class="cm">// System prompt instruction:</span>
+<span class="cn">"You must respond ONLY with a valid JSON object matching this schema.
+Never add explanatory prose outside the JSON structure.
+{
+  'decision':          'APPROVE' | 'DECLINE' | 'REFER' | 'ESCALATE',
+  'confidence':        number between 0.0 and 1.0,
+  'reasoning_steps':   string[] (one per evaluation criterion),
+  'regulatory_refs':   string[] (policy/regulation citations),
+  'flags':             string[] (risk flags requiring human attention),
+  'recommended_action': string (specific next step),
+  'expiry':            ISO 8601 datetime
+}"</span></code></div>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Unversioned Prompts in Application Code</div><div class="cb">The credit agent's system prompt lives as a string constant in a Spring Boot service. Four developers have access to the file. Over three months, three small changes are made with no change request raised, no approval sought, no version recorded. When the decline rate rises and the audit committee asks which prompt drove which decisions in which week — nobody can answer. This is a model governance failure under CPS 230.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Treat system prompts as versioned configuration artefacts stored in a configuration management system (AWS SSM, Azure App Configuration, or a dedicated prompt registry), tagged with semantic version numbers, requiring approval for changes affecting regulated use cases. Log the prompt version identifier alongside every inference decision.</div></div>
+  <div class="chips"><span class="chip">All agents — foundational</span><span class="chip">Regulatory decisions</span><span class="chip">Consistent output format</span><span class="chip">Downstream API contracts</span></div>
+</article>
+</section>
+
+<div class="orn">· · ·</div>
+
+<!-- LAYER 2 -->
+<section id="layer2">
+<div class="sec-open rev">
+  <div class="sec-lbl" style="color:var(--purple)">Layer Two · Orchestration Patterns</div>
+  <h2 class="sec-h2">A single capable agent is a reliable worker.<br/>Ten agents without coordination is an <em style="color:var(--purple)">organisational disaster</em>.</h2>
+  <p class="sec-intro">How agents decompose complex work, route tasks to specialists, maintain quality, and process at scale — the patterns that transform a collection of agents into a system with genuine enterprise capability.</p>
+  <div class="callout c-p"><div class="ch">Enterprise Principle</div><div class="cb">Specialise agents — do not generalise them. Narrow agents with one job, clear I/O contracts, and bounded tool access are testable, replaceable, and auditable. These are the properties that matter in a regulated environment where you must explain every decision and replace any component independently.</div></div>
+</div>
+
+<article class="pat-art rev" id="planner">
+  <div class="pat-hdr">
+    <span class="pat-num">07</span>
+    <div><h3 class="pat-title">Planner–Executor</h3><span class="pat-sub">Strategic decomposition meets governed execution</span></div>
+    <span class="pat-tag" style="background:var(--purple-l);color:var(--purple)">Enterprise Core</span>
+  </div>
+  <p class="pat-lead">A Planner agent decomposes a high-level goal into a structured task graph. Executor agents carry out individual tasks, respecting dependencies, and report results back. The Planner synthesises outputs into a coherent final response. This is program management — applied to AI.</p>
+  <p class="pb">The Planner-Executor pattern maps directly to how enterprise architects think about large program decomposition. A business objective is translated into a capability map; capabilities decompose into work packages; work packages have dependencies that must be sequenced correctly. The Planner produces a DAG (Directed Acyclic Graph) and the execution engine honours the dependency ordering.</p>
+  <div class="cw"><span class="cl">SME onboarding with trade finance — Planner output</span><code><span class="cm">// Goal: "Onboard new SME customer and set up trade finance facility"</span>
+
+<span class="ck">Planner — task DAG:</span>
+{ tasks: [
+    { id:<span class="cn">"T1"</span>, agent:<span class="cv">"kyc_agent"</span>,   depends_on:[],          action:<span class="cn">"verify_identity_documents"</span> },
+    { id:<span class="cn">"T2"</span>, agent:<span class="cv">"aml_agent"</span>,   depends_on:[],          action:<span class="cn">"build_aml_profile"</span> },
+    { id:<span class="cn">"T3"</span>, agent:<span class="cv">"credit_agent"</span>, depends_on:[<span class="cn">"T1","T2"</span>], action:<span class="cn">"assess_facility_limit"</span> },
+    { id:<span class="cn">"T4"</span>, agent:<span class="cv">"docs_agent"</span>,  depends_on:[<span class="cn">"T3"</span>],      action:<span class="cn">"generate_facility_agreement"</span> },
+    { id:<span class="cn">"T5"</span>, agent:<span class="cv">"notify_agent"</span>,depends_on:[<span class="cn">"T4"</span>],      action:<span class="cn">"send_welcome_package"</span> }
+  ]
+}
+
+<span class="cm">// Execution engine honours DAG:</span>
+<span class="cv">T1 ‖ T2</span>  →  <span class="cv">T3</span>  →  <span class="cv">T4</span>  →  <span class="cv">T5</span></code></div>
+  <p class="pb">The execution engine — critically — is not the Planner or any Executor. It is a dedicated workflow orchestrator: Temporal, AWS Step Functions, or equivalent. This distinction matters enormously. Using the LLM to manage its own execution order introduces non-determinism into a process that must be reliable, auditable, and recoverable on failure.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Task Plan as List, Not Graph</div><div class="cb">The Planner outputs a sequential list. The execution engine runs them in list order. The Planner, operating stochastically, places credit assessment (T3) before AML profiling (T2) in the list one time in twenty. The credit assessment executes using incomplete AML data. In banking, a credit decision without completed AML profiling is a regulatory breach under the AML/CTF Act 2006.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Model the task plan as a DAG with explicit dependency declarations. Validate the DAG structure before any execution begins — reject plans that contain cycles, reference unknown agents, or violate registered dependency rules. Use a workflow engine to enforce execution order at the infrastructure level. The workflow engine's execution log becomes your audit trail for task ordering compliance.</div></div>
+  <div class="chips"><span class="chip">Customer onboarding</span><span class="chip">Loan origination</span><span class="chip">Trade finance setup</span><span class="chip">Regulatory submissions</span></div>
+</article>
+
+<article class="pat-art rev" id="supervisor">
+  <div class="pat-hdr">
+    <span class="pat-num">08</span>
+    <div><h3 class="pat-title">Supervisor–Worker</h3><span class="pat-sub">One front door, an orchestra of specialists behind it</span></div>
+    <span class="pat-tag" style="background:var(--purple-l);color:var(--purple)">Platform Pattern</span>
+  </div>
+  <p class="pat-lead">The Supervisor–Worker pattern is the natural architecture for an AI banking platform. A single Supervisor agent receives every request, classifies intent, routes to the right specialist Worker, and aggregates the response. Workers know their domain deeply and nothing else.</p>
+  <p class="pb">The Supervisor acts as both a control plane and a customer experience layer. From the customer's perspective, there is one coherent AI system. Behind that interface, specialist Workers handle different domains — each with its own system prompt, tool set, RAG knowledge base, and quality thresholds. Workers operate in complete isolation from each other. This is not an architectural accident — it is a deliberate safety property. Workers cannot inadvertently influence each other, cannot create feedback loops, and can be tested, updated, and audited independently.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — LLM Routing Without Confidence Fallback</div><div class="cb">On an ambiguous query — "what are the fees for international transfers?" — the classifier assigns 0.62 confidence but routes to the product Worker anyway. The product Worker lacks the international fee schedule, which lives in the payments Worker. The customer receives incomplete information delivered with AI confidence. Under ASIC obligations around fee disclosure for retail banking customers, this is not a minor accuracy issue.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Set an explicit confidence threshold — typically 0.75 for routing decisions in regulated contexts. Below threshold, route to a clarification agent whose sole purpose is to ask one disambiguation question and pass the clarified query back to the Supervisor. Log every routing decision: the query, classification result, confidence score, threshold applied, and Worker selected.</div></div>
+  <div class="chips"><span class="chip">AI banking platform</span><span class="chip">Multi-domain queries</span><span class="chip">Omnichannel AI agent</span><span class="chip">Staff productivity tools</span></div>
+</article>
+
+<article class="pat-art rev" id="critic">
+  <div class="pat-hdr">
+    <span class="pat-num">09</span>
+    <div><h3 class="pat-title">Critic–Refiner</h3><span class="pat-sub">Adversarial quality assurance at AI speed</span></div>
+    <span class="pat-tag" style="background:var(--coral-l);color:var(--coral)">Quality System</span>
+  </div>
+  <p class="pat-lead">The Critic–Refiner pattern pairs a generator with an independent reviewer. Agent A produces a draft; Agent B evaluates it against a structured rubric and returns specific failures; Agent A revises. Human reviewers see not just the output, but the quality assurance log that validated it.</p>
+  <p class="pb">The Critic's rubric is the key artefact to design carefully. A good rubric is specific ("Does the DTI ratio calculation in section 3.2 match the components listed in Appendix A?"), not vague ("Is this accurate?"). It tests measurable properties, not subjective ones. And it produces structured output — not free-text feedback — so the Generator can act on it programmatically in the next revision cycle.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — No Iteration Cap</div><div class="cb">A Critic–Refiner pair deployed for APRA regulatory return generation enters an infinite loop: the Critic always finds something imperfect; the Refiner always revises; the system never declares the output acceptable. The regulatory return deadline passes. The bank submits late. This is not a hypothetical — several organisations have reported exactly this failure mode in production deployments without iteration caps.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Define "done" with two conditions: all mandatory rubric criteria must pass AND model confidence must exceed 0.88. Set a hard iteration cap at three rounds. On cap breach — an explicit escalation to human review with the final draft and the full critique log attached. The human reviewer makes the final call, informed by the machine's quality assessment.</div></div>
+  <div class="chips"><span class="chip">APRA statistical returns</span><span class="chip">Customer communications</span><span class="chip">Contractual documents</span><span class="chip">Board papers</span></div>
+</article>
+
+<article class="pat-art rev" id="mapreduce">
+  <div class="pat-hdr">
+    <span class="pat-num">10</span>
+    <div><h3 class="pat-title">Map–Reduce</h3><span class="pat-sub">Distributed intelligence for documents that exceed any context window</span></div>
+    <span class="pat-tag" style="background:var(--teal-l);color:var(--teal)">Scale Pattern</span>
+  </div>
+  <p class="pat-lead">Every large language model has a context window limit. Large enterprise documents — ISDA master agreements, portfolio review packs, multi-fund regulatory submissions — routinely exceed it. Map–Reduce processes them by splitting, parallelising, and aggregating.</p>
+  <p class="pb">In the <strong>Map phase</strong>, the document is split into independent chunks, each processed in parallel by a Map agent applying the same structured extraction task to its segment. In the <strong>Reduce phase</strong>, a Reducer agent receives all extraction results, deduplicates overlapping findings, resolves conflicts, and synthesises a unified output. For contract review in a capital markets context, this transforms a two-day analyst task into a twenty-minute automated extraction with human review at the end.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — No Chunk Overlap at Boundaries</div><div class="cb">A Material Adverse Change clause begins on the last three lines of chunk 20 and continues through the first seven lines of chunk 21. Chunk 20's agent extracts an incomplete clause. Chunk 21's agent extracts a fragment that appears standalone. The Reducer treats them as two distinct clauses — creating a ghost clause and silently losing the complete MAC definition. This error surfaces only in litigation.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Implement 100–200 token overlap at every chunk boundary. Include explicit conflict detection in the Reducer prompt: "If two adjacent chunk extractions appear to describe the same clause, combine them. If two non-adjacent chunks produce conflicting values for the same term, flag both as CONFLICT and surface both versions for human review." Never allow the Reducer to silently resolve conflicts.</div></div>
+  <div class="chips"><span class="chip">Large contract review</span><span class="chip">Portfolio analysis</span><span class="chip">Multi-fund reporting</span><span class="chip">Regulatory submission assembly</span></div>
+</article>
+</section>
+
+<div class="orn">· · ·</div>
+
+<!-- LAYER 3 -->
+<section id="layer3">
+<div class="sec-open rev">
+  <div class="sec-lbl" style="color:var(--teal)">Layer Three · Integration Patterns</div>
+  <h2 class="sec-h2">How intelligence touches the real world<br/>without <em style="color:var(--teal)">breaking</em> it.</h2>
+  <p class="sec-intro">AI connecting to your core banking system, event bus, API gateway, and human workforce. The layer where value is delivered — and where most enterprise AI projects create technical debt that outlasts the original team.</p>
+  <div class="callout c-p"><div class="ch">Enterprise Principle</div><div class="cb">AI is a consumer of your existing fabric — not a replacement for it. Your core banking system, event bus, and API gateway already have governance, SLAs, and access controls. Integrate through those existing patterns. Every bespoke connector that bypasses them is a governance debt you will pay later.</div></div>
+</div>
+
+<article class="pat-art rev" id="toolcall">
+  <div class="pat-hdr">
+    <span class="pat-num">11</span>
+    <div><h3 class="pat-title">Tool / Function Calling</h3><span class="pat-sub">The bridge between language and action</span></div>
+    <span class="pat-tag" style="background:var(--teal-l);color:var(--teal)">Core Integration</span>
+  </div>
+  <p class="pat-lead">Tool calling is the mechanism by which an AI agent interacts with the real world. The model produces structured arguments; your runtime executes the actual call. What's in the tool registry determines everything an agent can do — and everything it can break.</p>
+  <p class="pb">A well-designed tool registry is a governed service catalogue with explicit security properties. Every tool entry must carry: a name and description precise enough to route correctly without human intervention; a typed, validated parameter schema; the OAuth scope required; a data classification tag so every call is logged with appropriate sensitivity; and a rate limit to prevent a looping agent from triggering cascading API failures downstream.</p>
+  <p class="pb">The description is the most important field. The model reads tool descriptions to decide which tool to call. Writing tool descriptions as you would write API documentation for a thoughtful junior developer — explaining what it does, what it returns, when to use it versus alternatives, and what errors to expect — is the single highest-leverage improvement available in most agentic systems.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Agent Has Write Access It Doesn't Need</div><div class="cb">The tool registry includes <code>update_customer_record</code> alongside read-only lookup tools, because a developer copied the tool set from an internal admin API. A prompt injection in a customer-provided free-text field causes the agent to call the write tool with adversary-controlled parameters. The result: corrupted customer data in core banking — simultaneously a data integrity incident and a CPS 234 information security incident, both requiring regulatory notification.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Apply principle of least privilege to every agent's tool set at design time. Customer-facing read-only agents receive only read-only tools. Write operations require explicit human confirmation — implemented as a HITL gate in the workflow, not as an agent decision. Audit every tool call with the agent's session context. Review tool usage logs weekly for anomalous patterns.</div></div>
+  <div class="chips"><span class="chip">Core banking API</span><span class="chip">Payment execution</span><span class="chip">Customer record access</span><span class="chip">External data enrichment</span></div>
+</article>
+
+<article class="pat-art rev" id="eventdriven">
+  <div class="pat-hdr">
+    <span class="pat-num">12</span>
+    <div><h3 class="pat-title">Event-Driven AI</h3><span class="pat-sub">Real-time intelligence on the payments rail</span></div>
+    <span class="pat-tag" style="background:var(--amber-l);color:var(--amber)">Real-Time Critical</span>
+  </div>
+  <p class="pat-lead">Event-Driven AI activates agents in response to business events, not user requests. It is the architecture that places AI intelligence directly on the payment processing path — making fraud prevention a real-time intervention, not a retrospective review.</p>
+  <p class="pb">In the NPP (New Payments Platform) context, a payment event arrives on a Kafka topic. A pre-screening rule engine — operating in microseconds — evaluates the event against defined risk signals. When three or more signals are present, the fraud analysis agent is invoked with the full event payload. The agent enriches with device history, payee velocity, behavioural biometrics, and geo-anomaly scoring. A risk verdict and recommended action are returned within the NPP's five-second processing window.</p>
+  <div class="cw"><span class="cl">Event-driven fraud scoring — NPP payment</span><code><span class="ck">Event:</span>   Kafka: payments.npp.outbound
+         { amount:<span class="cn">45000</span>, beneficiary:<span class="cn">"NEW_PAYEE"</span>, time:<span class="cn">"02:14"</span>, device:<span class="cn">"NEW_MOBILE"</span> }
+
+<span class="ck">Pre-screen:</span> 3 risk signals — agent activation threshold met
+
+<span class="ck">Enrichment:</span>
+  <span class="cv">device_history</span>:    0 prior transactions on this device
+  <span class="cv">payee_velocity</span>:    new payee, 0 prior payments
+  <span class="cv">geo_anomaly</span>:       login Melbourne; typical: Sydney
+  <span class="cv">behavioural_score</span>: 0.91 deviation from baseline
+
+<span class="ck">Output:</span> { risk:<span class="cn">0.94</span>, action:<span class="cn">"HOLD_SOFT"</span>, reason:<span class="cn">"4 concurrent risk signals"</span> }
+<span class="ck">Timeline:</span> <span class="cv">680ms</span> end-to-end  ·  NPP window: <span class="cv">5000ms</span></code></div>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — LLM Latency Exceeds the Payment SLA Window</div><div class="cb">LLM inference plus tool calls plus reranking takes 6–9 seconds. Under peak load, payments begin timing out. The gateway, receiving no fraud decision within the NPP window, fails safe — declining legitimate payments. The bank receives 2,400 complaints in four hours. This is a service reliability incident under NPP Connected Institution obligations.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Tiered, latency-gated scoring: Tier 1 (≤100ms) deterministic rule engine. Tier 2 (≤800ms) lightweight ML scoring model, handles 90% of transactions. Tier 3 (async) LLM deep analysis for the 5–10% in the mid-risk band. Only Tier 1 and 2 are on the synchronous payment path. LLM intelligence enriches retrospective case management and improves Tier 2 model training.</div></div>
+  <div class="chips"><span class="chip">NPP fraud scoring</span><span class="chip">AML transaction monitoring</span><span class="chip">Threshold breach alerts</span><span class="chip">Liquidity event response</span></div>
+</article>
+
+<article class="pat-art rev" id="semcache">
+  <div class="pat-hdr">
+    <span class="pat-num">13</span>
+    <div><h3 class="pat-title">Semantic Cache</h3><span class="pat-sub">Instant answers for questions that have already been answered</span></div>
+    <span class="pat-tag" style="background:var(--green-l);color:var(--green)">Performance</span>
+  </div>
+  <p class="pat-lead">60–80% of FAQ traffic at a retail bank is semantically equivalent — the same questions phrased differently. Semantic Cache stores AI responses keyed by meaning rather than exact text, delivering sub-10ms responses for common queries while reserving full inference for genuinely novel ones.</p>
+  <p class="pb">Standard HTTP caching fails for natural language because "what is my home loan rate?" and "can you tell me the interest rate on my mortgage?" have different strings but identical intent. Semantic Cache solves this by embedding incoming queries as vectors and retrieving cached responses by cosine similarity. Above a threshold (typically 0.92–0.95), the cached response is returned immediately. Below threshold, the full agent pipeline runs, and the result is cached for subsequent similar queries.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Caching Personalised Responses</div><div class="cb">"What is MY account balance?" is semantically very similar to "What's my current balance?" — both embed close in vector space. If the cache does not correctly identify this as personalised and cache-ineligible: Customer A's balance of $42,318 gets cached. Customer B, fifteen minutes later, asks "What's my current balance?" The semantic similarity is 0.96 — above threshold. The cache returns Customer A's balance to Customer B. This is a privacy breach notifiable to the OAIC under the Privacy Act 1988 Notifiable Data Breaches scheme.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Implement a query classifier that runs before cache lookup. Any query containing personalisation signals (my, your, account, balance, transaction, statement) or real-time signals (current, today, now, latest) is immediately classified as cache-ineligible and routed to the full agent pipeline. Only generic informational queries — rates, policy terms, product features, locations — enter the semantic cache. Enforce this classification at the gateway level.</div></div>
+  <div class="chips"><span class="chip">FAQ deflection</span><span class="chip">Product information</span><span class="chip">Rate and fee lookups</span><span class="chip">Policy explanations</span></div>
+</article>
+
+<article class="pat-art rev" id="hitl">
+  <div class="pat-hdr">
+    <span class="pat-num">14</span>
+    <div><h3 class="pat-title">Human-in-the-Loop</h3><span class="pat-sub">The blocking gate that makes AI safe for consequential decisions</span></div>
+    <span class="pat-tag" style="background:var(--blue-l);color:var(--blue)">Governance Gate</span>
+  </div>
+  <p class="pat-lead">Human-in-the-Loop is not a checkbox, a notification, or a "flag for review" button. It is a blocking gate embedded in the workflow DAG — a structural pause before consequential actions that requires a human decision before the agent may proceed.</p>
+  <p class="pb">The pattern exists because some decisions carry consequences that cannot be reversed by a subsequent correction. A payment made incorrectly may be recoverable; reputational damage to a customer who received an erroneous credit decline is not. HITL gates prevent the class of errors that are easier to avoid than to fix. In regulated Australian financial services, minimum escalation criteria include: agent confidence below 0.75 on any financial decision; transaction value exceeding the pre-approved automation limit; customer with an active financial hardship flag; any PEP, sanctions, or adverse media match; any action triggering a regulated disclosure obligation under IDR or EDR frameworks; and any explicit customer request for human assistance.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Retrospective Review Instead of Blocking Gate</div><div class="cb">The team adds a "flag for review" dashboard at the end. The agent sends emails, updates records, and submits forms — then flags high-risk cases for review the next morning. When the compliance reviewer checks, the agent has already acted. For a customer who received an incorrect hardship assessment email, the harm occurred the previous afternoon. Under ASIC's RG 271, the bank must now respond to a complaint about an error the system made before any human saw the output. The dashboard is not HITL. It is audit logging with a pleasant interface.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Design HITL as a first-class component in the workflow DAG from the initial architecture session. The agent produces a recommendation; the workflow pauses; a task is created in the human review queue; the agent does nothing further until the reviewer approves or modifies. Use Temporal, AWS Step Functions, or equivalent to enforce this structurally — not a boolean flag in application code that a future developer might disable for performance reasons.</div></div>
+  <div class="chips"><span class="chip">High-value decisions</span><span class="chip">Regulated disclosures</span><span class="chip">Financial hardship cases</span><span class="chip">AML escalations</span><span class="chip">PEP/sanctions matches</span></div>
+</article>
+</section>
+
+<div class="orn">· · ·</div>
+
+<!-- LAYER 4 -->
+<section id="layer4">
+<div class="sec-open rev">
+  <div class="sec-lbl" style="color:var(--muted)">Layer Four · Governance & Resilience</div>
+  <h2 class="sec-h2">What your CISO, risk committee,<br/>and regulator need to see<br/>before they say <em style="color:var(--muted)">yes</em>.</h2>
+  <p class="sec-intro">The operational wrapper that transforms a prototype into a production system. In regulated financial services, this layer is not optional — it is the entire argument for deployment at scale.</p>
+  <div class="callout c-p"><div class="ch">Enterprise Principle</div><div class="cb">Govern the AI system as you govern any critical IT system. APRA CPS 230 (operational risk) and CPS 234 (information security) apply to AI systems just as they apply to core banking. Your framework must address model change management, data lineage, incident response, vendor concentration risk, and third-party assurance for model providers.</div></div>
+</div>
+
+<article class="pat-art rev" id="guardrails">
+  <div class="pat-hdr">
+    <span class="pat-num">15</span>
+    <div><h3 class="pat-title">Guardrails Framework</h3><span class="pat-sub">Input and output safety enforcement at the infrastructure layer</span></div>
+    <span class="pat-tag" style="background:var(--bg-3);color:var(--muted)">Safety · Mandatory</span>
+  </div>
+  <p class="pat-lead">Guardrails intercept and validate both inputs to agents and outputs from them. They are not a user experience feature. They are a security control — and they must be applied with the same universality and rigour as other security controls in your technology estate.</p>
+  <p class="pb"><strong>Input guardrails</strong> run before the agent processes any request: prompt injection detection (regex + LLM classifier), PII redaction before reaching an external LLM API, topic scope enforcement, and token budget limits. <strong>Output guardrails</strong> run before the response reaches the caller: faithfulness checking against retrieved context, PII leakage scanning, regulatory accuracy checking for rate or policy claims, and format compliance validation against the declared schema.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Guardrails Only on Customer-Facing Agents</div><div class="cb">Rigorous guardrails are applied to customer-facing agents and none to internal staff tools, reasoning that "staff won't try to exploit them." This fails on three vectors: insider threat (a disgruntled employee uses prompt injection to extract unauthorised customer records), compromised credentials (an external attacker with stolen staff login uses the internal tool to exfiltrate data at scale), and accidental misuse (a well-intentioned staff member inadvertently surfaces data across customer boundaries). All three produce the same result: an OAIC notifiable data breach.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Apply guardrails uniformly across all agents with no exceptions for internal tools. Maintain separate guardrail configurations per agent class (customer-facing, staff-facing, automated pipeline) — but maintain them, version them, and audit them all. Guardrail health is a metric in your AI observability dashboard alongside throughput and latency.</div></div>
+  <div class="chips"><span class="chip">All agents — mandatory</span><span class="chip">Prompt injection defence</span><span class="chip">PII protection</span><span class="chip">Hallucination detection</span><span class="chip">Schema enforcement</span></div>
+</article>
+
+<article class="pat-art rev" id="circuitbreaker">
+  <div class="pat-hdr">
+    <span class="pat-num">16</span>
+    <div><h3 class="pat-title">Circuit Breaker</h3><span class="pat-sub">Intelligent failure isolation with meaningful fallback</span></div>
+    <span class="pat-tag" style="background:var(--coral-l);color:var(--coral)">Resilience</span>
+  </div>
+  <p class="pat-lead">When an AI service degrades, the system should route to a fallback that still solves the customer's problem — not to a generic error. A circuit breaker without a meaningful fallback is simply a way of failing faster, which is not the same as failing gracefully.</p>
+  <p class="pb">Three states: <strong>Closed</strong> (normal — all traffic to AI), <strong>Open</strong> (degraded — triggered when error rate exceeds 5% over 60 seconds or P95 latency exceeds the SLA threshold — all traffic to fallback), and <strong>Half-Open</strong> (recovery probe — after 30 seconds, 10% of traffic to AI while 90% continues to fallback; if probe normalises, return to Closed). The fallback strategy is the most important design decision — and the most frequently neglected. A fallback must be designed with the same customer-centricity as the primary AI path.</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Fallback Routes to a Generic Error</div><div class="cb">The AI banking assistant's circuit breaker opens during a peak period (9am Monday). The fallback renders: "Our AI assistant is temporarily unavailable. Please try again later." During the 4-hour degradation period, 47,000 customers encounter this message. The majority call the contact centre. Call volume spikes 340%. Average wait time reaches 28 minutes. The AI outage has created a contact centre capacity crisis. The circuit breaker did exactly what it was designed to do — and made everything worse, because the fallback was not designed.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Design the fallback as a first-class product experience, developed in parallel with the AI path. For customer-facing agents, the fallback must be functional, not apologetic. Test the fallback monthly in production — deliberately trigger the circuit breaker in a non-peak window and verify that customer journeys complete on the fallback path.</div></div>
+  <div class="chips"><span class="chip">Customer-facing AI services</span><span class="chip">Payment path AI</span><span class="chip">Fraud scoring</span><span class="chip">Regulatory reporting pipelines</span></div>
+</article>
+
+<article class="pat-art rev" id="observability">
+  <div class="pat-hdr">
+    <span class="pat-num">17</span>
+    <div><h3 class="pat-title">AI Observability</h3><span class="pat-sub">The audit trail that answers the regulator's question</span></div>
+    <span class="pat-tag" style="background:var(--amber-l);color:var(--amber)">Regulatory Baseline</span>
+  </div>
+  <p class="pat-lead">Standard APM tells you the service was slow. AI Observability tells you why the agent decided what it decided — with enough fidelity to reconstruct any decision from any point in time, months or years later, under regulatory examination.</p>
+  <p class="pb">AI Observability goes beyond traditional APM in three critical dimensions: it captures <strong>model-specific signals</strong> (prompt version, model identifier, token distribution, confidence score, guardrail evaluation results); it maintains <strong>full inference context</strong> (not just the output, but the complete input including system prompt, user query, and all RAG chunks injected); and it tracks <strong>decision drift over time</strong> — detecting when the distribution of decisions shifts in ways that indicate model degradation, prompt version changes, or retrieval quality deterioration.</p>
+  <div class="cw"><span class="cl">Minimum observable data per AI inference (regulatory standard)</span><code>{
+  <span class="ck">trace_id:</span>       <span class="cn">"uuid-v4"</span>,
+  <span class="ck">agent_id:</span>       <span class="cn">"kyc_enrichment_agent"</span>,
+  <span class="ck">agent_version:</span> <span class="cn">"v2.3.1"</span>,
+  <span class="ck">prompt_version:</span><span class="cn">"kyc-sys-prompt-v14"</span>,  <span class="cm">// governs the decision</span>
+  <span class="ck">model:</span>          <span class="cn">"claude-sonnet-4-6"</span>,
+  <span class="ck">input_tokens:</span>  <span class="cv">1842</span>,  <span class="ck">output_tokens:</span> <span class="cv">312</span>,  <span class="ck">latency_ms:</span> <span class="cv">1240</span>,
+  <span class="ck">rag_chunks:</span>    [<span class="cn">"policy-4.2-v8"</span>, <span class="cn">"aml-guidance-r3"</span>],
+  <span class="ck">tools_called:</span>  [<span class="cn">"sanctions_check"</span>, <span class="cn">"pep_lookup"</span>],
+  <span class="ck">decision:</span>      <span class="cn">"HIGH_RISK"</span>,  <span class="ck">confidence:</span> <span class="cv">0.91</span>,
+  <span class="ck">guardrail_hits:</span>[],
+  <span class="ck">user_id:</span>       <span class="cn">"[tokenised]"</span>,
+  <span class="ck">timestamp:</span>    <span class="cn">"2026-06-05T03:14:22Z"</span>,
+  <span class="ck">retention_class:</span><span class="cn">"REGULATED_DECISION_7Y"</span>
+}</code></div>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Logging Output but Not Prompt Context</div><div class="cb">Logs record the agent's decision — DECLINED — and the timestamp. When an APRA review examines a sample of automated credit decisions, the team can show what was decided and when. They cannot show which prompt version governed the decision, which RAG chunks were in context, what the confidence was, or what tool calls occurred. The decision cannot be reconstructed. Under CPS 230, this is a model risk management finding that triggers remediation requirements.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Log the complete inference context as a single atomic record at every agent decision point. Store in an immutable, append-only log store with tamper-evident properties (AWS S3 with Object Lock, or Azure Blob with immutability policies). Apply retention class tagging at write time: regulated credit and AML decisions require seven-year retention in Australia.</div></div>
+  <div class="chips"><span class="chip">All agents — regulatory baseline</span><span class="chip">Drift detection</span><span class="chip">Incident investigation</span><span class="chip">APRA review readiness</span></div>
+</article>
+
+<article class="pat-art rev" id="cost">
+  <div class="pat-hdr">
+    <span class="pat-num">18</span>
+    <div><h3 class="pat-title">Cost & Token Governance</h3><span class="pat-sub">The FinOps layer that keeps AI economically sustainable</span></div>
+    <span class="pat-tag" style="background:var(--green-l);color:var(--green)">FinOps</span>
+  </div>
+  <p class="pat-lead">Two million AI interactions per day at the wrong model tier generates a multi-million dollar monthly inference bill before business value is proven. Cost and Token Governance is the pattern that maps intelligence to price — routing each task to the cheapest model that meets the quality requirement.</p>
+  <p class="pb">Three tiers, classified at design time based on task complexity benchmarks: <strong>Small models (Haiku-class)</strong> for simple lookups, FAQ, and triage classification — fastest, cheapest, achieves 92–96% of larger model quality on these tasks. <strong>Mid-tier models (Sonnet-class)</strong> for document analysis, drafting, and structured extraction — balanced quality and cost. <strong>Full models (Opus-class)</strong> for complex reasoning, regulatory analysis, and high-stakes decisioning — the cost premium is justified by the quality gap.</p>
+  <p class="pb">Budget enforcement operates at three levels: per-session token limits (preventing runaway agentic loops), per-agent daily budgets (preventing any single use case from consuming disproportionate capacity), and per-business-unit weekly reporting (making AI cost visible to the teams generating it — which consistently produces more thoughtful usage than invisible shared infrastructure).</p>
+  <div class="callout c-m"><div class="ch">⚠ Critical Mistake — Largest Model for Every Task</div><div class="cb">The AI platform team, prioritising quality and risk-aversion, configures the largest available model as the default for every agent. Early pilots at 50,000 interactions/month show no cost problem. The programme scales to 1.5 million interactions/month. The monthly inference cost is presented to the CFO. The programme is suspended pending a cost-benefit review. Three months of suspension adds $2M in programme management cost and delays delivery by a quarter. The pattern that would have prevented this — model tier routing based on task complexity — requires approximately two days of benchmarking work.</div></div>
+  <div class="callout c-f"><div class="ch">✓ The Fix</div><div class="cb">Conduct task-complexity benchmarking before deployment. For each use case, run 200–500 representative queries through all available model tiers. Measure quality (accuracy, format compliance, safety metrics) and latency. Identify the cheapest model tier that meets your quality threshold for each use case. Implement model tier routing in the API gateway layer — not in individual agent code. Review routing allocations quarterly as model capabilities and prices evolve.</div></div>
+  <div class="chips"><span class="chip">FinOps reporting</span><span class="chip">Model tier routing</span><span class="chip">Budget enforcement</span><span class="chip">Vendor concentration management</span><span class="chip">Cost attribution by BU</span></div>
+</article>
+</section>
+
+<div class="orn">· · ·</div>
+
+<!-- QUICK REFERENCE -->
+<section id="reference">
+<div class="sum-wrap rev">
+  <div class="sec-lbl" style="color:var(--coral)">Epilogue · Quick Reference</div>
+  <h2 class="sec-h2" style="margin-bottom:.75rem">All 18 Patterns at a Glance</h2>
+  <p style="font-size:1rem;color:var(--muted);margin-bottom:2rem;font-style:italic">The architect who returns from the war room at dawn does not go looking for new technology. She goes looking for the patterns that were missing.</p>
+  <div style="overflow-x:auto">
+  <table class="sum-tbl">
+    <thead><tr><th>#</th><th>Pattern</th><th>Layer</th><th>Primary BFSI use case</th><th>Critical mistake</th><th>Fix in one line</th></tr></thead>
+    <tbody>
+      <tr><td>01</td><td class="td-n">ReAct</td><td><span class="lb l1">L1</span></td><td>KYC enrichment, fraud investigation</td><td>No loop termination → runaway tool calls</td><td>Encode max_steps + terminal action in system prompt</td></tr>
+      <tr><td>02</td><td class="td-n">Chain of Thought</td><td><span class="lb l1">L1</span></td><td>Credit decisioning, risk explainability</td><td>Stripping CoT from audit log</td><td>Log full reasoning structure — it's the compliance evidence</td></tr>
+      <tr><td>03</td><td class="td-n">RAG</td><td><span class="lb l1">L1</span></td><td>Policy Q&amp;A, regulatory lookup</td><td>Hard-split chunking breaks regulatory clauses</td><td>Semantic chunking + 100-token overlap + reranker</td></tr>
+      <tr><td>04</td><td class="td-n">Self-Reflection</td><td><span class="lb l1">L1</span></td><td>Regulatory reports, customer comms</td><td>Critiquing in same context window = bias</td><td>Separate API call, different system prompt for critique</td></tr>
+      <tr><td>05</td><td class="td-n">Memory Management</td><td><span class="lb l1">L1</span></td><td>Customer context, long-running cases</td><td>Raw PII in AI memory — data sovereignty breach</td><td>AI holds the token; your data store holds the PII</td></tr>
+      <tr><td>06</td><td class="td-n">Structured Prompting</td><td><span class="lb l1">L1</span></td><td>All agents — foundational baseline</td><td>Unversioned prompts in application code</td><td>Versioned config artefact, approved change process</td></tr>
+      <tr><td>07</td><td class="td-n">Planner–Executor</td><td><span class="lb l2">L2</span></td><td>Onboarding, end-to-end loan origination</td><td>List not DAG → wrong execution order</td><td>DAG with explicit dependencies + workflow engine</td></tr>
+      <tr><td>08</td><td class="td-n">Supervisor–Worker</td><td><span class="lb l2">L2</span></td><td>AI banking platform, multi-domain</td><td>LLM routing without confidence fallback</td><td>Confidence threshold + clarification agent below 0.75</td></tr>
+      <tr><td>09</td><td class="td-n">Critic–Refiner</td><td><span class="lb l2">L2</span></td><td>Regulatory returns, board papers</td><td>No iteration cap → infinite refinement loop</td><td>Hard cap 3 rounds, then human review — no exceptions</td></tr>
+      <tr><td>10</td><td class="td-n">Map–Reduce</td><td><span class="lb l2">L2</span></td><td>Large contract review, portfolio analysis</td><td>No chunk overlap → clause boundary failures</td><td>100-token overlap + explicit conflict detection in Reducer</td></tr>
+      <tr><td>11</td><td class="td-n">Tool / Function Calling</td><td><span class="lb l3">L3</span></td><td>Core banking API integration</td><td>Write access where only read is needed</td><td>Principle of least privilege per agent, not per system</td></tr>
+      <tr><td>12</td><td class="td-n">Event-Driven AI</td><td><span class="lb l3">L3</span></td><td>NPP fraud scoring, AML monitoring</td><td>LLM latency exceeds payment SLA window</td><td>Tiered scoring: rules → ML → async LLM</td></tr>
+      <tr><td>13</td><td class="td-n">Semantic Cache</td><td><span class="lb l3">L3</span></td><td>FAQ deflection, rate lookups</td><td>Caching personalised responses = privacy breach</td><td>Classify cache-eligibility before lookup, not after</td></tr>
+      <tr><td>14</td><td class="td-n">Human-in-the-Loop</td><td><span class="lb l3">L3</span></td><td>High-value decisions, regulated disclosures</td><td>Review after action, not before</td><td>Blocking gate in DAG — not a notification dashboard</td></tr>
+      <tr><td>15</td><td class="td-n">Guardrails Framework</td><td><span class="lb l4">L4</span></td><td>All agents — mandatory safety baseline</td><td>Guardrails only on external agents</td><td>Uniform application — internal tools are equally at risk</td></tr>
+      <tr><td>16</td><td class="td-n">Circuit Breaker</td><td><span class="lb l4">L4</span></td><td>All customer-facing AI services</td><td>Fallback routes to generic error message</td><td>Design the fallback as a functional product experience</td></tr>
+      <tr><td>17</td><td class="td-n">AI Observability</td><td><span class="lb l4">L4</span></td><td>All agents — regulatory audit trail</td><td>Logging output, not full prompt context</td><td>Atomic trace: prompt version + chunks + tools + decision</td></tr>
+      <tr><td>18</td><td class="td-n">Cost &amp; Token Governance</td><td><span class="lb l4">L4</span></td><td>FinOps, model tier routing</td><td>Largest model for every task</td><td>Benchmark quality gap; route by task complexity</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="prologue rev" style="padding-top:2rem">
+  <div class="pq">The next architect on call at three in the morning will thank you for it.</div>
+  <p>The story that opened this guide — a payment declined in error, logs without context, a team searching for an answer that was never stored — is not a cautionary tale about artificial intelligence. It is a cautionary tale about the absence of architecture. The AI made a decision. Nobody could explain it. That is not an AI failure. That is a governance failure.</p>
+  <p>The eighteen patterns documented here are the architecture. They answer the questions that matter in regulated enterprise AI: how does an agent know when to stop, how are multiple agents coordinated without creating compliance gaps, how does intelligence connect to the enterprise without bypassing existing controls, and how do you operate AI safely when the regulator asks to see your model governance framework?</p>
+  <p>Apply them in the right order. Foundation before orchestration. Integration through existing fabric, not around it. Governance as a design primitive, not a retrofit. Build the audit trail from day one. Version the prompts. Cap the loops. Gate the writes. Design the fallback before the failure.</p>
+  <p>The patterns that were missing from that Sydney war room at 3:14 in the morning are documented here. Use them.</p>
+</div>
+</section>
+</main>
+
+<footer>
+  <strong>Enterprise Architecture · AI Design Patterns Field Guide</strong><br/>
+  Banking &amp; Financial Services · APRA CPS 230 / CPS 234 aligned · 2026<br/>
+  18 patterns · 4 layers · Foundation · Orchestration · Integration · Governance
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>{
+  const s=document.documentElement;
+  document.getElementById('progress').style.width=(s.scrollTop/(s.scrollHeight-s.clientHeight)*100)+'%';
+},{passive:true});
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.06});
+document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
+const sections=document.querySelectorAll('section[id]');
+const links=document.querySelectorAll('.nav-links a[data-s]');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-80)cur=s.id;});
+  links.forEach(a=>a.classList.toggle('active',a.dataset.s===cur));
+},{passive:true});
+</script>
+</body>
+</html>
